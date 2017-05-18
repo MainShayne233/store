@@ -5,7 +5,7 @@ defmodule Store.ETS do
   """
 
   @doc """
-  returns a new ets table
+  Returns a new ets table
 
   ## Example
 
@@ -17,45 +17,60 @@ defmodule Store.ETS do
   end
 
   @doc """
-  inserts data into the table depending on the type
-  """
-  def set(table, data) when data |> is_map do
-    table
-    |> insert( data |> Map.to_list )
-  end
-
-  @doc"""
-  inserts key-value tuple(s) into table
-  can be a single tuple, or list of tuples
-  returns true if successful, argument errors otherwise
+  Inserts key-value tuple(s) into table
+  Can be a single tuple, or list of tuples
+  Returns true if successful, argument errors otherwise
   """
   def insert(table, record) do
     table
     |> :ets.insert(record)
+    table
   end
 
   @doc """
-  Returns the value stored for the specified key in tuple format
-  {:ok, value}, {:error, :not_found}
+  Removes the entry in the table for the specified key, if any
+  """
+  def delete(table, key) do
+    table
+    |> :ets.delete(key)
+    table
+  end
+
+  @doc """
+  Clears the table, then inserts the new data
+  """
+  def set(table, data) do
+    table
+    |> clear
+    |> insert(data)
+  end
+
+  @doc """
+  Returns the value stored for the specified key, or nil if the key doesn't exist
   """
   def get(table, key) do
     table
     |> :ets.lookup(key)
     |> case do
-      []              -> {:error, :not_found}
-      [{^key, value}] -> {:ok, value}
+      []              -> nil
+      [{^key, value}] -> value
     end
   end
 
   @doc """
-  Return the value stored for the specified key
+  Returns all of the values in the table
   """
-  def get!(table, key) do
+  def all(table) do
     table
-    |> get(key)
-    |> case do
-      {:ok, value} -> value
-      {:error, :not_found} -> nil
-    end
+    |> :ets.match({:"$1", :"$2"})
+    |> Enum.map(fn [key, val] -> {key, val} end)
+  end
+
+  @doc """
+  Should completely clear the ETS table
+  """
+  def clear(table) do
+    table |> :ets.delete_all_objects
+    table
   end
 end
