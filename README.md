@@ -28,7 +28,7 @@ map
   another_map_key: :another_map_value,
 }) # can also merge a map to insert multiple key-value pairs at once
 #=>
-:my_global_map # Map PID/name is returned for functions where value isn't returned
+PID<0.107.0> # PID is returned for functions where value isn't returned
 
 # Get the data back
 Store.Map.get(map, :key)
