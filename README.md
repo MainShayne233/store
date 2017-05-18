@@ -2,7 +2,7 @@
 Global data structures in Elixir
 
 Current structures implemented:
-- Map (Core API)
+- Map (Core API only)
 
 ## Usage
 Add as mix dependency in `mix.exs`
@@ -21,8 +21,8 @@ end
 
 # Put some data into the map
 map
-|> Store.Map.put(map, :key, :value) # simple put function, just like Map.put
-|> Store.Map.put(map, :other_key, other_value)
+|> Store.Map.put(:key, :value) # simple put function, just like Map.put
+|> Store.Map.put(:other_key, :other_value)
 |> Store.Map.merge(%{
   map_key: :map_value,
   another_map_key: :another_map_value,
