@@ -29,6 +29,14 @@ defmodule Store.Map do
   end
 
   @doc """
+  Merges map into map
+  """
+  def merge(pid, map) do
+    GenServer.cast(pid, {:merge, map})
+    pid
+  end
+
+  @doc """
   Replaces the map data with that of the passed in map
   """
   def set(pid, data) when data |> is_map do
@@ -66,10 +74,13 @@ defmodule Store.Map do
     GenServer.call(pid, :keys)
   end
 
+  def values(pid) do
+    GenServer.call(pid, :values)
+  end
+
   def init(opts) do
     table = ETS.create(opts[:name], [:ordered_set, :protected])
-    data = ETS.create("__#{opts[:name]}_data__" |> String.to_atom, [:ordered_set, :protected])
-    data |> ETS.insert({:keys, []})
+    data = ETS.create("__#{opts[:name]}_data__" |> String.to_atom, [:bag, :protected])
     cond do
       opts[:init_data] -> 
         GenServer.cast(self(), {:set, opts[:init_data]})
@@ -85,7 +96,15 @@ defmodule Store.Map do
     table
     |> ETS.insert({key, value})
     data
-    |> ETS.insert({:keys, ETS.get(data, :keys) ++ [key]})
+    |> ETS.insert({:keys, key})
+    {:noreply, state}
+  end
+
+  def handle_cast({:merge, map}, state = %{table: table, __data__: data}) do
+    table
+    |> ETS.insert(map |> Map.to_list)
+    data
+    |> ETS.insert_many({:keys, map |> Map.keys})
     {:noreply, state}
   end
 
@@ -93,7 +112,7 @@ defmodule Store.Map do
     table
     |> ETS.set( new_data |> Map.to_list )
     data
-    |> ETS.insert({:keys, new_data |> Map.keys})
+    |> ETS.insert_many({:keys, new_data |> Map.keys})
     {:noreply, state}
   end
 
@@ -101,7 +120,7 @@ defmodule Store.Map do
     table
     |> ETS.delete(key)
     data
-    |> ETS.insert({:keys, ETS.get(data, :keys) -- [key]})
+    |> ETS.delete_many({:keys, [key]})
     {:noreply, state}
   end
 
@@ -109,7 +128,7 @@ defmodule Store.Map do
     table
     |> ETS.drop(keys)
     data
-    |> ETS.insert({:keys, ETS.get(data, :keys) -- keys})
+    |> ETS.delete_many({:keys, keys})
     {:noreply, state}
   end
 
@@ -118,7 +137,14 @@ defmodule Store.Map do
   end
 
   def handle_call(:keys, _from, state = %{__data__: data}) do
-    keys = data |> ETS.get(:keys)
+    keys = data |> ETS.get_all(:keys)
     {:reply, keys, state}
+  end
+
+  def handle_call(:values, _from, state = %{table: table, __data__: data}) do
+    values = data
+    |> ETS.get_all(:keys)
+    |> Enum.map(&( ETS.get(table, &1) ))
+    {:reply, values, state}
   end
 end

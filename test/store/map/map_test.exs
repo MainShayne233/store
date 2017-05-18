@@ -12,6 +12,18 @@ defmodule Store.Test.Map do
     assert map |> Store.Map.get(:key) == :value
   end
 
+  test "merge/2 should merge the map into the map" do
+    {:ok, map} = Store.Map.start_link(:my_store)
+    map
+    |> Store.Map.put(:key, :val)
+    |> Store.Map.merge(%{map_key1: :map_val1, map_key2: :map_val2})
+    |> Store.Map.put(:other_key, :other_val)
+    assert map |> Store.Map.get(:key) == :val
+    assert map |> Store.Map.get(:other_key) == :other_val
+    assert map |> Store.Map.get(:map_key1) == :map_val1
+    assert map |> Store.Map.get(:map_key2) == :map_val2
+  end
+
   test "get/2 should return the value for the key, nil if doesn't exist" do
     {:ok, map} = Store.Map.start_link(:my_store)
     map |> Store.Map.put(:key, :value)
@@ -34,6 +46,13 @@ defmodule Store.Test.Map do
     |> Store.Map.put(:key1, :val1)
     |> Store.Map.put(:key2, :val2)
     |> Store.Map.keys == [:key1, :key2]
+  end
+
+  test "values/1 should return the values for the map" do
+    {:ok, map} = Store.Map.start_link(:my_store)
+    assert map
+    |> Store.Map.merge(%{key1: 1, key2: 2, key3: 3})
+    |> Store.Map.values == [1, 2, 3]
   end
 
   test "delete/2 should delete the key and associated value from the map" do

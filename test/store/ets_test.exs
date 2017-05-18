@@ -59,4 +59,23 @@ defmodule Store.Test.ETS do
     assert table |> Store.ETS.get(:key1) == nil
     assert table |> Store.ETS.all == [{:key2, :val2}]
   end
+
+  test "get_all/2 should get all values stored with a key in a bag ets table" do
+    assert Store.ETS.create(:my_table, [:bag, :protected])
+    |> Store.ETS.insert([{:key, 1}, {:key, 2}])
+    |> Store.ETS.get_all(:key) == [1,2]
+  end
+
+  test "insert_many/2 should insert the list of values into the table for the key" do
+    assert Store.ETS.create(:my_table, [:bag, :protected])
+    |> Store.ETS.insert_many({:key, [1, 2, 3, 4]})
+    |> Store.ETS.get_all(:key) == [1, 2, 3, 4]
+  end
+
+  test "delete_many/2 should remove the list of values for the key" do
+    assert Store.ETS.create(:my_table, [:bag, :protected])
+    |> Store.ETS.insert_many({:key, [2, 2, 3, 4]})
+    |> Store.ETS.delete_many({:key, [1,4]})
+    |> Store.ETS.get_all(:key) == [2, 3]
+  end
 end
