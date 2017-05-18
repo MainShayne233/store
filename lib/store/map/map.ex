@@ -45,6 +45,14 @@ defmodule Store.Map do
   end
 
   @doc """
+  Removes the keys and associated values from the map
+  """
+  def drop(pid, keys) when keys |> is_list do
+    GenServer.cast(pid, {:drop, keys})
+    pid
+  end
+
+  @doc """
   Returns the value for the specified key, nil if key doesn't exist
   """
   def get(pid, key) do
@@ -94,6 +102,14 @@ defmodule Store.Map do
     |> ETS.delete(key)
     data
     |> ETS.insert({:keys, ETS.get(data, :keys) -- [key]})
+    {:noreply, state}
+  end
+
+  def handle_cast({:drop, keys}, state = %{table: table, __data__: data}) do
+    table
+    |> ETS.drop(keys)
+    data
+    |> ETS.insert({:keys, ETS.get(data, :keys) -- keys})
     {:noreply, state}
   end
 

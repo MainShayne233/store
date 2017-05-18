@@ -45,4 +45,16 @@ defmodule Store.Test.Map do
     assert map |> Store.Map.get(:key1) == nil
     assert map |> Store.Map.get(:key2) == :val2
   end
+
+  test "drop/2 should delete the keys and associated values from the map" do
+    {:ok, map} = Store.Map.start_link(:my_store)
+    map
+    |> Store.Map.put(:key1, :val1)
+    |> Store.Map.put(:key2, :val2)
+    |> Store.Map.put(:key3, :val3)
+    |> Store.Map.drop([:key1, :key3])
+    assert map |> Store.Map.get(:key1) == nil
+    assert map |> Store.Map.get(:key2) == :val2
+    assert map |> Store.Map.get(:key3) == nil
+  end
 end

@@ -37,6 +37,15 @@ defmodule Store.ETS do
   end
 
   @doc """
+  Removes the entries for the given keys from the table
+  """
+  def drop(table, keys) when keys |> is_list do
+    keys
+    |> Enum.each(&( delete(table, &1) ))
+    table
+  end
+
+  @doc """
   Clears the table, then inserts the new data
   """
   def set(table, data) do

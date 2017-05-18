@@ -49,4 +49,14 @@ defmodule Store.Test.ETS do
     |> Store.ETS.delete(:key)
     |> Store.ETS.get(:key) == nil
   end
+
+  test "drop/2 should remove the keys and associated values from the table" do
+    table = Store.ETS.create(:my_table, [:ordered_set, :protected])
+    |> Store.ETS.insert([{:key1, :val1}, {:key2, :val2}, {:key3, :val3}])
+    |> Store.ETS.drop([:key1, :key3])
+    assert table |> Store.ETS.get(:key1) == nil
+    assert table |> Store.ETS.get(:key2) == :val2
+    assert table |> Store.ETS.get(:key1) == nil
+    assert table |> Store.ETS.all == [{:key2, :val2}]
+  end
 end
