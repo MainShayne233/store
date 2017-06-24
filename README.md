@@ -9,7 +9,7 @@ Add as mix dependency in `mix.exs`
 ```elixir
 def deps do
   [
-    {:store, git: "git@github.com/MainShayne233/store.git"}
+    {:store, github: "MainShayne233/store"}
   ]
 end
 ```
